@@ -33,7 +33,7 @@
   WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
 */
 
-//#define AT_HOME 0
+#define AT_HOME 1
 #define REGELBETRIEB 1
 
 #include <FS.h> //this needs to be first, or it all crashes and burns...
@@ -61,7 +61,12 @@
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <LEDMatrixDriver.hpp>
 #include "wifi_security.h"
-
+/**
+  Random Number Generator 32bit
+  http://esp8266-re.foogod.com/wiki/Random_Number_Generator
+ **/
+#define RANDOM_REG32  ESP8266_DREG(0x20E44)
+ 
 ESP8266WebServer* server;
 
 bool lamp = 0;
@@ -206,6 +211,11 @@ unsigned int counter=0;
 char oben[2];
 char unten[2];
 
+char fixed[5];
+char moving[5];
+
+int animcounter;
+int animationmode;
 
 //callback notifying us of the need to save config
 void saveConfigCallback ()
@@ -217,6 +227,9 @@ void saveConfigCallback ()
 
 void setup(void)
 {
+  randomSeed(RANDOM_REG32);
+  animationmode=random(0,2);
+  animcounter=random(0,100);
   rst_info *resetInfo;
   resetInfo = ESP.getResetInfoPtr();
   Serial.begin(115200);
@@ -553,28 +566,111 @@ void loop(void)
   lcdBuf[1]=lcdBuf[1]-15;
 //  sprintf(lcdBuf, "%04d", ++counter);
   int changeDetected=0;
-  for(int i=3;i>-1;--i)
+  switch(animationmode)
   {
-    if(lcdBufOld[i]!=lcdBuf[i])
+    case 1:
     {
-      ++changeDetected;
-      oben[0]=lcdBuf[i];
-      unten[0]=lcdBufOld[i];
-      int y=-8;
-      while(y<2)
+      int decimal=5;
+      for(int i=0;i<4;++i)
       {
-      drawString(lcdBufOld, i, (s%2), 0);
-      
-       drawString(oben, 1, (s%2)+i*8, y);
-       drawString(unten, 1, (s%2)+i*8, y+8);
-        lmd.display();
-       ++y;
-       delay(ANIM_DELAY);
+        if(lcdBufOld[i]!=lcdBuf[i])
+        {
+          changeDetected=1;
+          for(int j=3;j>=i;--j)
+          {
+            for(int k=0;k<4;++k)
+            {
+              if(k<j)
+              {
+                fixed[k]=lcdBufOld[k];
+              }
+              else
+              {
+                moving[k-j]=lcdBufOld[k];
+                moving[k-j+1]=0;
+                fixed[k]=0;
+              }
+            }
+            if(0)
+            {
+              decimal=i;
+              Serial.print("fixed: ");
+              Serial.println(fixed);
+              Serial.print("moving: ");
+              Serial.println(moving);
+            }
+            
+            for(int l=j*8;l<32;++l)
+            {
+              drawString(fixed, i, (s%2), 0);
+              drawString(moving, 1, (s%2)+l, 0);
+              lmd.display();
+              delay(ANIM_DELAY);
+            }
+          }
+          for(int j=i;j<4;++j)
+          {
+            for(int k=0;k<4;++k)
+            {
+              if(k<j)
+              {
+                fixed[k]=lcdBufOld[k];
+              }
+              else
+              {
+                moving[k-j]=lcdBuf[k];
+                moving[k-j+1]=0;
+                fixed[k]=0;
+              }
+            }
+    //        if(i!decimal)
+            {
+              decimal=i;
+              Serial.print("fixed: ");
+              Serial.println(fixed);
+              Serial.print("moving: ");
+              Serial.println(moving);
+            }
+            
+            for(int l=32;l>=j*8;--l)
+            {
+              drawString(fixed, i, (s%2), 0);
+              drawString(moving, 1, (s%2)+l, 0);
+              lmd.display();
+              delay(ANIM_DELAY);
+            }
+          }
+          break;    
+        }
       }
-       drawString(oben, 1, (s%2)+i*8, 0);
-//      drawString(lcdBuf, i, (s%2), 0);
-        lmd.display();
-       delay(ANIM_DELAY);
+      break;
+    }
+    default:
+    {
+      for(int i=3;i>-1;--i)
+      {
+        if(lcdBufOld[i]!=lcdBuf[i])
+        {
+          ++changeDetected;
+          oben[0]=lcdBuf[i];
+          unten[0]=lcdBufOld[i];
+          int y=-8;
+          while(y<2)
+          {
+          drawString(lcdBufOld, i, (s%2), 0);
+          
+           drawString(oben, 1, (s%2)+i*8, y);
+           drawString(unten, 1, (s%2)+i*8, y+8);
+            lmd.display();
+           ++y;
+           delay(ANIM_DELAY);
+          }
+           drawString(oben, 1, (s%2)+i*8, 0);
+    //      drawString(lcdBuf, i, (s%2), 0);
+            lmd.display();
+           delay(ANIM_DELAY);
+        }
+      }
     }
   }
   if(changeDetected==0)
@@ -587,10 +683,23 @@ void loop(void)
     lmd.display();
     delay(1000);
   }
+  else
+  {
+    --animcounter;
+    if(animcounter<0)
+    {
+      animationmode=random(0,2);
+      animcounter=random(30,100);
+    }
+  }
   double sensorValue = analogRead(A0);
   Serial.println(sensorValue);
   intensity=(int)(((sensorValue/1024.0)*(sensorValue/1024.0))*10.0);
   lmd.setIntensity(intensity);   // 0 = low, 10 = high
+}
+
+int getRandomNumber(int startNum, int endNum) {
+  return random(startNum, endNum);
 }
 
 
