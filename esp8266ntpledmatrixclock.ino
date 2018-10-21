@@ -213,6 +213,9 @@ char unten[2];
 
 char fixed[5];
 char moving[5];
+char mnew[5];
+
+char emm[]="M";
 
 int animcounter;
 int animationmode;
@@ -228,7 +231,7 @@ void saveConfigCallback ()
 void setup(void)
 {
   randomSeed(RANDOM_REG32);
-  animationmode=random(0,2);
+  animationmode=random(0,3);
   animcounter=random(0,100);
   rst_info *resetInfo;
   resetInfo = ESP.getResetInfoPtr();
@@ -541,16 +544,16 @@ void loop(void)
 {
   sprintf(lcdBufOld,"%s",lcdBuf);
   timeClient.update();
-  Serial.println(timeClient.getFormattedTime());
+//  Serial.println(timeClient.getFormattedTime());
   unsigned long epoch = timeClient.getEpochTime();
-  Serial.println(epoch);
+//  Serial.println(epoch);
 
   TimeChangeRule *tcr;
   time_t utc;
   utc = epoch;
 
   time_t local = CE.toLocal(utc, &tcr);
-  Serial.println(local);
+//  Serial.println(local);
 
   unsigned long h = hour(local);
   unsigned long mi = minute(local);
@@ -559,15 +562,74 @@ void loop(void)
   unsigned long mo = month(local);
   unsigned long d = day(local);
 
-  Serial.print("local: ");
+//  Serial.print("local: ");
   printTimeToBuffer(local, tcr -> abbrev);
-  Serial.println(timestrbuf);
+//  Serial.println(timestrbuf);
   printTimeToLCDBuffer(local, tcr -> abbrev);
   lcdBuf[1]=lcdBuf[1]-15;
 //  sprintf(lcdBuf, "%04d", ++counter);
   int changeDetected=0;
+//  animationmode=2;
   switch(animationmode)
   {
+    case 2:
+    {
+      int decimal=5;
+      for(int i=0;i<4;++i)
+      {
+        if(lcdBufOld[i]!=lcdBuf[i])
+        {
+          changeDetected=1;
+          for(int j=3;j>=i;--j)
+          {
+            for(int k=0;k<4;++k)
+            {
+              if(k<j)
+              {
+                fixed[k]=lcdBufOld[k];
+              }
+              else
+              {
+                moving[k-j]=lcdBufOld[k];
+                moving[k-j+1]=0;
+                mnew[k-j]=lcdBuf[k];
+                mnew[k-j+1]=0;
+                fixed[k]=0;
+              }
+            }
+            byte* sprite=font[moving[0]- 32];
+            byte* newsprite=font[mnew[0]- 32];
+            byte* destination=font['M'- 32];
+            for(int l=0;l<4;++l)
+            {
+              for(int m=0;m<8;++m)
+              {
+                destination[m]=(sprite [m]>>l)&0xF0;
+                destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
+              }
+              drawString(fixed, i, (s%2), 0);
+              drawString(emm, 1, (s%2)+(j)*8, 0);
+              lmd.display();
+              delay(ANIM_DELAY*3);
+            }
+            for(int l=3;l>=0;--l)
+            {
+              for(int m=0;m<8;++m)
+              {
+                destination[m]=(newsprite [m]>>l)&0xF0;
+                destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
+              }
+              drawString(fixed, i, (s%2), 0);
+              drawString(emm, 1, (s%2)+(j)*8, 0);
+              lmd.display();
+              delay(ANIM_DELAY*3);
+            }
+          }
+          break;    
+        }
+      }
+      break;
+    }
     case 1:
     {
       int decimal=5;
@@ -688,12 +750,12 @@ void loop(void)
     --animcounter;
     if(animcounter<0)
     {
-      animationmode=random(0,2);
+      animationmode=random(0,3);
       animcounter=random(30,100);
     }
   }
   double sensorValue = analogRead(A0);
-  Serial.println(sensorValue);
+//  Serial.println(sensorValue);
   intensity=(int)(((sensorValue/1024.0)*(sensorValue/1024.0))*10.0);
   lmd.setIntensity(intensity);   // 0 = low, 10 = high
 }
