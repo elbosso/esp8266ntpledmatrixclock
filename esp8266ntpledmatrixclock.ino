@@ -231,7 +231,7 @@ void saveConfigCallback ()
 void setup(void)
 {
   randomSeed(RANDOM_REG32);
-  animationmode=random(0,3);
+  animationmode=random(0,5);
   animcounter=random(0,100);
   rst_info *resetInfo;
   resetInfo = ESP.getResetInfoPtr();
@@ -569,9 +569,201 @@ void loop(void)
   lcdBuf[1]=lcdBuf[1]-15;
 //  sprintf(lcdBuf, "%04d", ++counter);
   int changeDetected=0;
-//  animationmode=2;
+//  animationmode=5;
   switch(animationmode)
   {
+    case 5:
+    {
+      int decimal=5;
+      for(int i=0;i<4;++i)
+      {
+        if(lcdBufOld[i]!=lcdBuf[i])
+        {
+          changeDetected=1;
+          for(int j=3;j>=i;--j)
+          {
+            for(int k=0;k<4;++k)
+            {
+              if(k<j)
+              {
+                fixed[k]=lcdBufOld[k];
+              }
+              else
+              {
+                moving[k-j]=lcdBufOld[k];
+                moving[k-j+1]=0;
+                mnew[k-j]=lcdBuf[k];
+                mnew[k-j+1]=0;
+                fixed[k]=0;
+              }
+            }
+            byte* sprite=font[moving[0]- 32];
+            byte* newsprite=font[mnew[0]- 32];
+            byte* destination=font['M'- 32];
+            for(int l=0;l<4;++l)
+            {
+              for(int m=0;m<8;++m)
+              {
+                destination[m]=(sprite [m]>>l)&0xF0;
+                destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
+              }
+              drawString(fixed, i, (s%2), 0);
+              drawString(emm, 1, (s%2)+(j)*8, 0);
+              lmd.display();
+              delay(ANIM_DELAY*2);
+            }
+            for(int l=4;l>0;--l)
+            {
+              for(int m=0;m<8;++m)
+              {
+                destination[m]=newsprite[m];
+              }
+              for(int m=1;m<l;++m)
+              {
+                destination[m+1]|=destination[m];
+                destination[m]=0;
+                destination[7-m]|=destination[7-m+1];
+                destination[7-m+1]=0;
+              }
+              drawString(fixed, i, (s%2), 0);
+              drawString(emm, 1, (s%2)+(j)*8, 0);
+              lmd.display();
+              delay(ANIM_DELAY*2);
+            }
+          }
+          break;    
+        }
+      }
+      break;
+    }
+    case 4:
+    {
+      int decimal=5;
+      for(int i=0;i<4;++i)
+      {
+        if(lcdBufOld[i]!=lcdBuf[i])
+        {
+          changeDetected=1;
+          for(int j=3;j>=i;--j)
+          {
+            for(int k=0;k<4;++k)
+            {
+              if(k<j)
+              {
+                fixed[k]=lcdBufOld[k];
+              }
+              else
+              {
+                moving[k-j]=lcdBufOld[k];
+                moving[k-j+1]=0;
+                mnew[k-j]=lcdBuf[k];
+                mnew[k-j+1]=0;
+                fixed[k]=0;
+              }
+            }
+            byte* sprite=font[moving[0]- 32];
+            byte* newsprite=font[mnew[0]- 32];
+            byte* destination=font['M'- 32];
+            for(int m=0;m<8;++m)
+            {
+              destination[m]=sprite [m];
+            }
+            for(int l=1;l<4;++l)
+            {
+              destination[l+1]|=destination[l];
+              destination[l]=0;
+              destination[7-l]|=destination[7-l+1];
+              destination[7-l+1]=0;
+              drawString(fixed, i, (s%2), 0);
+              drawString(emm, 1, (s%2)+(j)*8, 0);
+              lmd.display();
+              delay(ANIM_DELAY*2);
+            }
+            for(int l=4;l>0;--l)
+            {
+              for(int m=0;m<8;++m)
+              {
+                destination[m]=newsprite[m];
+              }
+              for(int m=1;m<l;++m)
+              {
+                destination[m+1]|=destination[m];
+                destination[m]=0;
+                destination[7-m]|=destination[7-m+1];
+                destination[7-m+1]=0;
+              }
+              drawString(fixed, i, (s%2), 0);
+              drawString(emm, 1, (s%2)+(j)*8, 0);
+              lmd.display();
+              delay(ANIM_DELAY*2);
+            }
+          }
+          break;    
+        }
+      }
+      break;
+    }
+    case 3:
+    {
+      int decimal=5;
+      for(int i=0;i<4;++i)
+      {
+        if(lcdBufOld[i]!=lcdBuf[i])
+        {
+          changeDetected=1;
+          for(int j=3;j>=i;--j)
+          {
+            for(int k=0;k<4;++k)
+            {
+              if(k<j)
+              {
+                fixed[k]=lcdBufOld[k];
+              }
+              else
+              {
+                moving[k-j]=lcdBufOld[k];
+                moving[k-j+1]=0;
+                mnew[k-j]=lcdBuf[k];
+                mnew[k-j+1]=0;
+                fixed[k]=0;
+              }
+            }
+            byte* sprite=font[moving[0]- 32];
+            byte* newsprite=font[mnew[0]- 32];
+            byte* destination=font['M'- 32];
+            for(int m=0;m<8;++m)
+            {
+              destination[m]=sprite [m];
+            }
+            for(int l=1;l<4;++l)
+            {
+              destination[l+1]|=destination[l];
+              destination[l]=0;
+              destination[7-l]|=destination[7-l+1];
+              destination[7-l+1]=0;
+              drawString(fixed, i, (s%2), 0);
+              drawString(emm, 1, (s%2)+(j)*8, 0);
+              lmd.display();
+              delay(ANIM_DELAY*2);
+            }
+            for(int l=3;l>=0;--l)
+            {
+              for(int m=0;m<8;++m)
+              {
+                destination[m]=(newsprite [m]>>l)&0xF0;
+                destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
+              }
+              drawString(fixed, i, (s%2), 0);
+              drawString(emm, 1, (s%2)+(j)*8, 0);
+              lmd.display();
+              delay(ANIM_DELAY*2);
+            }
+          }
+          break;    
+        }
+      }
+      break;
+    }
     case 2:
     {
       int decimal=5;
@@ -610,7 +802,7 @@ void loop(void)
               drawString(fixed, i, (s%2), 0);
               drawString(emm, 1, (s%2)+(j)*8, 0);
               lmd.display();
-              delay(ANIM_DELAY*3);
+              delay(ANIM_DELAY*2);
             }
             for(int l=3;l>=0;--l)
             {
@@ -622,7 +814,7 @@ void loop(void)
               drawString(fixed, i, (s%2), 0);
               drawString(emm, 1, (s%2)+(j)*8, 0);
               lmd.display();
-              delay(ANIM_DELAY*3);
+              delay(ANIM_DELAY*2);
             }
           }
           break;    
@@ -750,7 +942,7 @@ void loop(void)
     --animcounter;
     if(animcounter<0)
     {
-      animationmode=random(0,3);
+      animationmode=random(0,5);
       animcounter=random(30,100);
     }
   }
