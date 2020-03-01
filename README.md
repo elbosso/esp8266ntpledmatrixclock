@@ -42,4 +42,6 @@ exists at IP-address `192.168.10.2` if
 
 The define `AT_HOME` also decides which pair of WIFI credentials are to be used.
 
+Instructions for setting up the arduino IDE to actually be able to transfer the code to a Wemos D1 (clone) can be found [here](https://averagemaker.com/2018/03/wemos-d1-mini-setup.html)
+
 And so we have a nifty little clock...
