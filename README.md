@@ -20,4 +20,26 @@ https://github.com/elbosso/esp8266epaperdoorsign
 with an MAX7119 8x8 Led Matrix (well - actually four of them) and
 a photo resistor.
 
+The data for connecting with your wifi is located in a header file named `wifi_security.h` that i did
+not commit for obvious reasons. Its contents look something like the contents of the example named
+`wifi_security_h.example`:
+
+```
+#ifndef WIFISECURITY_H
+#define WIFISECURITY_H
+
+char wifi_ssid[]="<wifi_ssid>";
+char wifi_pwd[]="<wifi_pwd>";
+char wifi_ssid_cell_ap[]="<wifi_ssid_cell_ap>";
+char wifi_pwd_cell_ap[]="<wifi_pwd_cell_ap>";
+
+#endif /* WIFISECURITY_H */
+```
+
+The define `AT_HOME` is used to control what NTP-server should be used: The source code presumes a local NTP-server 
+exists at IP-address `192.168.10.2` if
+`AT_HOME` is set to 1 - if this is not so, it currently asks `2.de.pool.ntp.org` for the time.
+
+The define `AT_HOME` also decides which pair of WIFI credentials are to be used.
+
 And so we have a nifty little clock...
