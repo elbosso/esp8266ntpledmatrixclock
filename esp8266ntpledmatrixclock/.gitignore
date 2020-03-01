@@ -1,0 +1,8 @@
+*.zip
+*.gbr
+*.ps
+*.drl
+*.bak
+*.kicad_pcb-bak
+*-bak
+*~

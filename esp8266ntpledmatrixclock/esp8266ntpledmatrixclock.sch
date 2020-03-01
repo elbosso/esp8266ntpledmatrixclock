@@ -1,0 +1,228 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MCU_Module:WeMos_D1_mini U1
+U 1 1 5E5B9740
+P 4900 2550
+F 0 "U1" H 4900 1661 50  0000 C CNN
+F 1 "WeMos_D1_mini" H 4900 1570 50  0000 C CNN
+F 2 "Module:WEMOS_D1_mini_light" H 4900 1400 50  0001 C CNN
+F 3 "https://wiki.wemos.cc/products:d1:d1_mini#documentation" H 3050 1400 50  0001 C CNN
+	1    4900 2550
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0101
+U 1 1 5E5BA4D2
+P 4900 4050
+F 0 "#PWR0101" H 4900 3800 50  0001 C CNN
+F 1 "GND" H 4905 3877 50  0000 C CNN
+F 2 "" H 4900 4050 50  0001 C CNN
+F 3 "" H 4900 4050 50  0001 C CNN
+	1    4900 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR0102
+U 1 1 5E5BA670
+P 4800 1100
+F 0 "#PWR0102" H 4800 950 50  0001 C CNN
+F 1 "+5V" H 4815 1273 50  0000 C CNN
+F 2 "" H 4800 1100 50  0001 C CNN
+F 3 "" H 4800 1100 50  0001 C CNN
+	1    4800 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3V3 #PWR0103
+U 1 1 5E5BA9F7
+P 5000 1100
+F 0 "#PWR0103" H 5000 950 50  0001 C CNN
+F 1 "+3V3" H 5015 1273 50  0000 C CNN
+F 2 "" H 5000 1100 50  0001 C CNN
+F 3 "" H 5000 1100 50  0001 C CNN
+	1    5000 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_PHOTO R1
+U 1 1 5E5BAC15
+P 6550 1650
+F 0 "R1" H 6620 1696 50  0000 L CNN
+F 1 "R_PHOTO" H 6620 1605 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal" V 6600 1400 50  0001 L CNN
+F 3 "~" H 6550 1600 50  0001 C CNN
+	1    6550 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_POT_TRIM RV1
+U 1 1 5E5BB8E9
+P 6550 3500
+F 0 "RV1" H 6480 3546 50  0000 R CNN
+F 1 "R_POT_TRIM" H 6480 3455 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_3386F_Vertical" H 6550 3500 50  0001 C CNN
+F 3 "~" H 6550 3500 50  0001 C CNN
+	1    6550 3500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3V3 #PWR0104
+U 1 1 5E5BBCED
+P 6550 1100
+F 0 "#PWR0104" H 6550 950 50  0001 C CNN
+F 1 "+3V3" H 6565 1273 50  0000 C CNN
+F 2 "" H 6550 1100 50  0001 C CNN
+F 3 "" H 6550 1100 50  0001 C CNN
+	1    6550 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0105
+U 1 1 5E5BBE9A
+P 6700 4050
+F 0 "#PWR0105" H 6700 3800 50  0001 C CNN
+F 1 "GND" H 6705 3877 50  0000 C CNN
+F 2 "" H 6700 4050 50  0001 C CNN
+F 3 "" H 6700 4050 50  0001 C CNN
+	1    6700 4050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5000 1750 5000 1100
+Wire Wire Line
+	4800 1750 4800 1100
+Wire Wire Line
+	4900 4050 4900 3350
+$Comp
+L Connector:Conn_01x05_Male J1
+U 1 1 5E5C3F72
+P 7950 2450
+F 0 "J1" H 7922 2474 50  0000 R CNN
+F 1 "Conn_01x05_Male" H 7922 2383 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical" H 7950 2450 50  0001 C CNN
+F 3 "~" H 7950 2450 50  0001 C CNN
+	1    7950 2450
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	6700 4050 6700 3500
+Wire Wire Line
+	6550 3350 6550 2050
+Wire Wire Line
+	6550 1500 6550 1100
+Wire Wire Line
+	5300 2050 6550 2050
+Connection ~ 6550 2050
+Wire Wire Line
+	6550 2050 6550 1800
+$Comp
+L power:GND #PWR0106
+U 1 1 5E5D14DE
+P 5750 4050
+F 0 "#PWR0106" H 5750 3800 50  0001 C CNN
+F 1 "GND" H 5755 3877 50  0000 C CNN
+F 2 "" H 5750 4050 50  0001 C CNN
+F 3 "" H 5750 4050 50  0001 C CNN
+	1    5750 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3V3 #PWR0107
+U 1 1 5E5D28AC
+P 5850 1100
+F 0 "#PWR0107" H 5850 950 50  0001 C CNN
+F 1 "+3V3" H 5865 1273 50  0000 C CNN
+F 2 "" H 5850 1100 50  0001 C CNN
+F 3 "" H 5850 1100 50  0001 C CNN
+	1    5850 1100
+	1    0    0    -1  
+$EndComp
+Text GLabel 5950 1400 2    50   Input ~ 0
+VCC
+Text GLabel 5850 3750 2    50   Input ~ 0
+GND
+Text GLabel 5900 2850 2    50   Input ~ 0
+DIN
+Text GLabel 5900 2350 2    50   Input ~ 0
+CS
+Text GLabel 5900 2650 2    50   Input ~ 0
+CLK
+Wire Wire Line
+	5850 1100 5850 1400
+Wire Wire Line
+	5850 1400 5950 1400
+Wire Wire Line
+	5750 4050 5750 3750
+Wire Wire Line
+	5750 3750 5850 3750
+Wire Wire Line
+	5300 2350 5900 2350
+Wire Wire Line
+	5300 2650 5900 2650
+Wire Wire Line
+	5300 2850 5900 2850
+Text GLabel 7300 2250 0    50   Input ~ 0
+VCC
+Text GLabel 7300 2350 0    50   Input ~ 0
+GND
+Text GLabel 7300 2450 0    50   Input ~ 0
+DIN
+Text GLabel 7300 2550 0    50   Input ~ 0
+CS
+Text GLabel 7300 2650 0    50   Input ~ 0
+CLK
+Wire Wire Line
+	7300 2250 7750 2250
+Wire Wire Line
+	7300 2350 7750 2350
+Wire Wire Line
+	7300 2450 7750 2450
+Wire Wire Line
+	7300 2550 7750 2550
+Wire Wire Line
+	7300 2650 7750 2650
+NoConn ~ 5550 2150
+NoConn ~ 5550 2250
+NoConn ~ 5550 2450
+NoConn ~ 5550 2550
+NoConn ~ 5550 2750
+NoConn ~ 5550 2950
+NoConn ~ 4250 2150
+NoConn ~ 4250 2450
+NoConn ~ 4250 2550
+Wire Wire Line
+	5550 2150 5300 2150
+Wire Wire Line
+	5550 2250 5300 2250
+Wire Wire Line
+	5550 2450 5300 2450
+Wire Wire Line
+	5550 2550 5300 2550
+Wire Wire Line
+	5550 2750 5300 2750
+Wire Wire Line
+	5550 2950 5300 2950
+Wire Wire Line
+	4250 2150 4500 2150
+Wire Wire Line
+	4250 2450 4500 2450
+Wire Wire Line
+	4250 2550 4500 2550
+NoConn ~ 6550 4100
+Wire Wire Line
+	6550 4100 6550 3650
+$EndSCHEMATC
