@@ -378,7 +378,7 @@ void setup(void)
     //if it does not connect it starts an access point with the specified name
     //here  "AutoConnectAP_12F647"
     //and goes into a blocking loop awaiting configuration
-    if (!wifiManager.autoConnect("AutoConnectAP_ePaper"))
+    if (!wifiManager.autoConnect("AutoConnectAP_ntplmc"))
     {
       WiFi.mode(WIFI_OFF);
       WiFi.mode(WIFI_STA);
@@ -544,7 +544,7 @@ void loop(void)
 {
   sprintf(lcdBufOld,"%s",lcdBuf);
   timeClient.update();
-//  Serial.println(timeClient.getFormattedTime());
+  Serial.println(timeClient.getFormattedTime());
   unsigned long epoch = timeClient.getEpochTime();
 //  Serial.println(epoch);
 
