@@ -105,9 +105,9 @@ Timezone CE(CEST, CET);
 const uint8_t LEDMATRIX_CS_PIN = 4;
 
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7
-const int LEDMATRIX_WIDTH = 31;  
+const int LEDMATRIX_WIDTH = 63;  
 const int LEDMATRIX_HEIGHT = 7;
-const int LEDMATRIX_SEGMENTS = 4;
+const int LEDMATRIX_SEGMENTS = 8;
 
 // The LEDMatrixDriver class instance
 LEDMatrixDriver lmd(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN);
@@ -219,6 +219,8 @@ char emm[]="M";
 
 int animcounter;
 int animationmode;
+
+int loopcounter=0;
 
 //callback notifying us of the need to save config
 void saveConfigCallback ()
@@ -538,10 +540,12 @@ void printTimeToLCDBuffer(time_t t, char *tz)
   //if we dont do this!
   String wd(dayShortStr(weekday(t)));
   sprintf(lcdBuf, "%02d%02d", hour(t), minute(t));
+//  sprintf(lcdBuf, "%04d", loopcounter);
 }
 
 void loop(void)
 {
+  ++loopcounter;
   sprintf(lcdBufOld,"%s",lcdBuf);
   timeClient.update();
   Serial.println(timeClient.getFormattedTime());
@@ -569,7 +573,7 @@ void loop(void)
   lcdBuf[1]=lcdBuf[1]-15;
 //  sprintf(lcdBuf, "%04d", ++counter);
   int changeDetected=0;
-//  animationmode=5;
+//  animationmode=0;
   switch(animationmode)
   {
     case 5:
@@ -582,6 +586,7 @@ void loop(void)
           changeDetected=1;
           for(int j=3;j>=i;--j)
           {
+            int jj=j+(LEDMATRIX_WIDTH+1-32)/2/8;
             for(int k=0;k<4;++k)
             {
               if(k<j)
@@ -607,8 +612,8 @@ void loop(void)
                 destination[m]=(sprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
               }
-              drawString(fixed, i, (s%2), 0);
-              drawString(emm, 1, (s%2)+(j)*8, 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
               delay(ANIM_DELAY*2);
             }
@@ -625,8 +630,8 @@ void loop(void)
                 destination[7-m]|=destination[7-m+1];
                 destination[7-m+1]=0;
               }
-              drawString(fixed, i, (s%2), 0);
-              drawString(emm, 1, (s%2)+(j)*8, 0);
+              drawString(fixed, i, (s%2)+16, 0);
+              drawString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
               delay(ANIM_DELAY*2);
             }
@@ -646,6 +651,7 @@ void loop(void)
           changeDetected=1;
           for(int j=3;j>=i;--j)
           {
+            int jj=j+(LEDMATRIX_WIDTH+1-32)/2/8;
             for(int k=0;k<4;++k)
             {
               if(k<j)
@@ -674,8 +680,8 @@ void loop(void)
               destination[l]=0;
               destination[7-l]|=destination[7-l+1];
               destination[7-l+1]=0;
-              drawString(fixed, i, (s%2), 0);
-              drawString(emm, 1, (s%2)+(j)*8, 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
               delay(ANIM_DELAY*2);
             }
@@ -692,8 +698,8 @@ void loop(void)
                 destination[7-m]|=destination[7-m+1];
                 destination[7-m+1]=0;
               }
-              drawString(fixed, i, (s%2), 0);
-              drawString(emm, 1, (s%2)+(j)*8, 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
               delay(ANIM_DELAY*2);
             }
@@ -713,6 +719,7 @@ void loop(void)
           changeDetected=1;
           for(int j=3;j>=i;--j)
           {
+            int jj=j+(LEDMATRIX_WIDTH+1-32)/2/8;
             for(int k=0;k<4;++k)
             {
               if(k<j)
@@ -741,8 +748,8 @@ void loop(void)
               destination[l]=0;
               destination[7-l]|=destination[7-l+1];
               destination[7-l+1]=0;
-              drawString(fixed, i, (s%2), 0);
-              drawString(emm, 1, (s%2)+(j)*8, 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
               delay(ANIM_DELAY*2);
             }
@@ -753,8 +760,8 @@ void loop(void)
                 destination[m]=(newsprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
               }
-              drawString(fixed, i, (s%2), 0);
-              drawString(emm, 1, (s%2)+(j)*8, 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
               delay(ANIM_DELAY*2);
             }
@@ -774,6 +781,7 @@ void loop(void)
           changeDetected=1;
           for(int j=3;j>=i;--j)
           {
+            int jj=j+(LEDMATRIX_WIDTH+1-32)/2/8;
             for(int k=0;k<4;++k)
             {
               if(k<j)
@@ -799,8 +807,8 @@ void loop(void)
                 destination[m]=(sprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
               }
-              drawString(fixed, i, (s%2), 0);
-              drawString(emm, 1, (s%2)+(j)*8, 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
               delay(ANIM_DELAY*2);
             }
@@ -811,8 +819,8 @@ void loop(void)
                 destination[m]=(newsprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
               }
-              drawString(fixed, i, (s%2), 0);
-              drawString(emm, 1, (s%2)+(j)*8, 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
               delay(ANIM_DELAY*2);
             }
@@ -854,9 +862,9 @@ void loop(void)
               Serial.println(moving);
             }
             
-            for(int l=j*8;l<32;++l)
+            for(int l=j*8+(LEDMATRIX_WIDTH+1-32)/2;l<32+(LEDMATRIX_WIDTH+1-32);++l)
             {
-              drawString(fixed, i, (s%2), 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
               drawString(moving, 1, (s%2)+l, 0);
               lmd.display();
               delay(ANIM_DELAY);
@@ -886,9 +894,9 @@ void loop(void)
               Serial.println(moving);
             }
             
-            for(int l=32;l>=j*8;--l)
+            for(int l=32+(LEDMATRIX_WIDTH+1-32);l>=j*8+(LEDMATRIX_WIDTH+1-32)/2;--l)
             {
-              drawString(fixed, i, (s%2), 0);
+              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
               drawString(moving, 1, (s%2)+l, 0);
               lmd.display();
               delay(ANIM_DELAY);
@@ -911,15 +919,15 @@ void loop(void)
           int y=-8;
           while(y<2)
           {
-          drawString(lcdBufOld, i, (s%2), 0);
+          drawString(lcdBufOld, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
           
-           drawString(oben, 1, (s%2)+i*8, y);
-           drawString(unten, 1, (s%2)+i*8, y+8);
+           drawString(oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y);
+           drawString(unten, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y+8);
             lmd.display();
            ++y;
            delay(ANIM_DELAY);
           }
-           drawString(oben, 1, (s%2)+i*8, 0);
+           drawString(oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, 0);
     //      drawString(lcdBuf, i, (s%2), 0);
             lmd.display();
            delay(ANIM_DELAY);
@@ -930,7 +938,7 @@ void loop(void)
   if(changeDetected==0)
   {
     // Draw the text to the current position
-    drawString(lcdBuf, 4, (s%2), 0);
+    drawString(lcdBuf, 4, (s%2)+16, 0);
     // In case you wonder why we don't have to call lmd.clear() in every loop: The font has a opaque (black) background...
     
     // Toggle display of the new framebuffer
