@@ -61,13 +61,18 @@
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <LEDMatrixDriver.hpp>
 #include "wifi_security.h"
+#include "clock_font.h"
+#include "marquee_font.h"
+#include "marquee_form.h"
+
 /**
   Random Number Generator 32bit
   http://esp8266-re.foogod.com/wiki/Random_Number_Generator
  **/
 #define RANDOM_REG32  ESP8266_DREG(0x20E44)
  
-ESP8266WebServer* server;
+//ESP8266WebServer* server;
+ESP8266WebServer marqueeserver(8080);  // HTTP server will listen at port 8080
 
 bool lamp = 0;
 
@@ -107,7 +112,7 @@ const uint8_t LEDMATRIX_CS_PIN = 4;
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7
 const int LEDMATRIX_WIDTH = 63;  
 const int LEDMATRIX_HEIGHT = 7;
-const int LEDMATRIX_SEGMENTS = 8;
+const int LEDMATRIX_SEGMENTS = (LEDMATRIX_WIDTH+1)/8;
 
 // The LEDMatrixDriver class instance
 LEDMatrixDriver lmd(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN);
@@ -116,88 +121,6 @@ int intensity=0;
 
 int x=0, y=0;   // start top left
 
-// This is the font definition. You can use http://gurgleapps.com/tools/matrix to create your own font or sprites.
-// If you like the font feel free to use it. I created it myself and donate it to the public domain.
-byte font[95][8] = { {0,0,0,0,0,0,0,0}, // SPACE
-                     {0x00,0x38,0x44,0x4d,0x54,0x65,0x44,0x38}, // 0
-                     {0x00,0x08,0x18,0x29,0x48,0x09,0x08,0x1c}, // 1
-                     {0x00,0x38,0x44,0x05,0x04,0x39,0x40,0x7c}, // 2
-                     {0x00,0x38,0x44,0x05,0x18,0x05,0x44,0x38}, // 3
-                     {0x00,0x48,0x48,0x49,0x48,0x7d,0x08,0x08}, // 4
-                     {0x00,0x7c,0x40,0x41,0x78,0x05,0x44,0x38}, // 5
-                     {0x00,0x38,0x40,0x41,0x78,0x45,0x44,0x38}, // 6
-                     {0x00,0x7c,0x04,0x05,0x08,0x09,0x10,0x10}, // 7
-                     {0x00,0x38,0x44,0x45,0x38,0x45,0x44,0x38}, // 8
-                     {0x00,0x38,0x44,0x45,0x3c,0x05,0x04,0x78}, // 9
-/*                     {0x10,0x18,0x18,0x18,0x18,0x00,0x18,0x18}, // EXCL
-                     {0x28,0x28,0x08,0x00,0x00,0x00,0x00,0x00}, // QUOT
-                     {0x00,0x0a,0x7f,0x14,0x28,0xfe,0x50,0x00}, // #
-                     {0x10,0x38,0x54,0x70,0x1c,0x54,0x38,0x10}, // $
-                     {0x00,0x60,0x66,0x08,0x10,0x66,0x06,0x00}, // %
-                     {0,0,0,0,0,0,0,0}, // &
-                     {0x00,0x10,0x18,0x18,0x08,0x00,0x00,0x00}, // '
-                     {0x02,0x04,0x08,0x08,0x08,0x08,0x08,0x04}, // (
-                     {0x40,0x20,0x10,0x10,0x10,0x10,0x10,0x20}, // )
-                     {0x00,0x10,0x54,0x38,0x10,0x38,0x54,0x10}, // *
-*/
-                     {0x00,0x08,0x08,0x08,0x7f,0x08,0x08,0x08}, // +
-                     {0x00,0x00,0x00,0x00,0x00,0x18,0x18,0x08}, // COMMA
-                     {0x00,0x00,0x00,0x00,0x7e,0x00,0x00,0x00}, // -
-                     {0x00,0x00,0x00,0x00,0x00,0x00,0x06,0x06}, // DOT
-                     {0x00,0x04,0x04,0x08,0x10,0x20,0x40,0x40}, // /
-                     {0x00,0x38,0x44,0x4c,0x54,0x64,0x44,0x38}, // 0
-/*                     {0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00}, // 1
-                     {0x00,0xff,0x00,0x00,0x00,0x00,0x00,0x00}, // 2
-                     {0x00,0x00,0xff,0x00,0x00,0x00,0x00,0x00}, // 3
-                     {0x00,0x00,0x00,0xff,0x00,0x00,0x00,0x00}, // 4
-                     {0x00,0x00,0x00,0x00,0xff,0x00,0x00,0x00}, // 5
-                     {0x00,0x00,0x00,0x00,0x00,0xff,0x00,0x00}, // 6
-                     {0x00,0x00,0x00,0x00,0x00,0x00,0xff,0x00}, // 7
-                     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff}, // 8
-*/                     {0x00,0x08,0x18,0x28,0x48,0x08,0x08,0x1c}, // 1
-                     {0x00,0x38,0x44,0x04,0x04,0x38,0x40,0x7c}, // 2
-                     {0x00,0x38,0x44,0x04,0x18,0x04,0x44,0x38}, // 3
-                     {0x00,0x48,0x48,0x48,0x48,0x7c,0x08,0x08}, // 4
-                     {0x00,0x7c,0x40,0x40,0x78,0x04,0x44,0x38}, // 5
-                     {0x00,0x38,0x40,0x40,0x78,0x44,0x44,0x38}, // 6
-                     {0x00,0x7c,0x04,0x04,0x08,0x08,0x10,0x10}, // 7
-                     {0x00,0x38,0x44,0x44,0x38,0x44,0x44,0x38}, // 8
-                     {0x00,0x38,0x44,0x44,0x3c,0x04,0x04,0x78}, // 9
-                     {0x00,0x18,0x18,0x00,0x00,0x18,0x18,0x00}, // :
-                     {0x00,0x18,0x18,0x00,0x00,0x18,0x18,0x08}, // ;
-                     {0x00,0x10,0x20,0x40,0x80,0x40,0x20,0x10}, // <
-                     {0x00,0x00,0x7e,0x00,0x00,0xfc,0x00,0x00}, // =
-                     {0x00,0x08,0x04,0x02,0x01,0x02,0x04,0x08}, // >
-                     {0x00,0x38,0x44,0x04,0x08,0x10,0x00,0x10}, // ?
-                     {0x00,0x30,0x48,0xba,0xba,0x84,0x78,0x00}, // @
-                     {0x00,0x1c,0x22,0x42,0x42,0x7e,0x42,0x42}, // A
-                     {0x00,0x78,0x44,0x44,0x78,0x44,0x44,0x7c}, // B
-                     {0x00,0x3c,0x44,0x40,0x40,0x40,0x44,0x7c}, // C
-                     {0x00,0x7c,0x42,0x42,0x42,0x42,0x44,0x78}, // D
-                     {0x00,0x78,0x40,0x40,0x70,0x40,0x40,0x7c}, // E
-                     {0x00,0x7c,0x40,0x40,0x78,0x40,0x40,0x40}, // F
-                     {0x00,0x3c,0x40,0x40,0x5c,0x44,0x44,0x78}, // G
-                     {0x00,0x42,0x42,0x42,0x7e,0x42,0x42,0x42}, // H
-                     {0x00,0x7c,0x10,0x10,0x10,0x10,0x10,0x7e}, // I
-                     {0x00,0x7e,0x02,0x02,0x02,0x02,0x04,0x38}, // J
-                     {0x00,0x44,0x48,0x50,0x60,0x50,0x48,0x44}, // K
-                     {0x00,0x40,0x40,0x40,0x40,0x40,0x40,0x7c}, // L
-                     {0x00,0x82,0xc6,0xaa,0x92,0x82,0x82,0x82}, // M
-                     {0x00,0x42,0x42,0x62,0x52,0x4a,0x46,0x42}, // N
-                     {0x00,0x3c,0x42,0x42,0x42,0x42,0x44,0x38}, // O
-                     {0x00,0x78,0x44,0x44,0x48,0x70,0x40,0x40}, // P
-                     {0x00,0x3c,0x42,0x42,0x52,0x4a,0x44,0x3a}, // Q
-                     {0x00,0x78,0x44,0x44,0x78,0x50,0x48,0x44}, // R
-                     {0x00,0x38,0x40,0x40,0x38,0x04,0x04,0x78}, // S
-                     {0x00,0x7e,0x90,0x10,0x10,0x10,0x10,0x10}, // T
-                     {0x00,0x42,0x42,0x42,0x42,0x42,0x42,0x3e}, // U
-                     {0x00,0x42,0x42,0x42,0x42,0x44,0x28,0x10}, // V
-                     {0x80,0x82,0x82,0x92,0x92,0x92,0x94,0x78}, // W
-                     {0x00,0x42,0x42,0x24,0x18,0x24,0x42,0x42}, // X
-                     {0x00,0x44,0x44,0x28,0x10,0x10,0x10,0x10}, // Y
-                     {0x00,0x7c,0x04,0x08,0x7c,0x20,0x40,0xfe}, // Z
-                      // (the font does not contain any lower case letters. you can add your own.)
-                  };    // {}, // 
 
 // Marquee speed
 const int ANIM_DELAY = 60;
@@ -221,6 +144,22 @@ int animcounter;
 int animationmode;
 
 int loopcounter=0;
+
+int numberOfHorizontalDisplays = 12;
+int numberOfVerticalDisplays = 1;
+String decodedMsg;
+String msg;
+String testMsg = "I LOVE MY HOT ASIAN SWEETNESS!!!!!!";
+int wait = 75; // In milliseconds
+
+int spacer = 2;
+int width = 5 + spacer; // The font width is 5 pixels
+int maxRuns=1;
+int runs=0;
+
+long period;
+int offset=1,refresh=0;
+
 
 //callback notifying us of the need to save config
 void saveConfigCallback ()
@@ -520,6 +459,26 @@ void setup(void)
   sprintf(lcdBuf,"    ");
   oben[1]=0;
   unten[1]=0;
+  // Set up the endpoints for HTTP server,  Endpoints can be written as inline functions:
+  // replay to all requests with same HTML
+  marqueeserver.onNotFound([]() {
+    marqueeserver.send(200, "text/html", form);
+  });
+  marqueeserver.on("/msg", handle_msg);
+  marqueeserver.begin();
+  
+// ***************** INITIAL READY & Read stored message from SPIFFS ****************
+    File fr = SPIFFS.open("/msgf.txt", "r");
+    while(fr.available()) {
+    String line = fr.readStringUntil('n');
+ //   Serial.println(line);
+    decodedMsg = String("IP ")+WiFi.localIP().toString();//line;
+    Serial.print("initial message: ");
+    Serial.println(decodedMsg.c_str());
+    fr.close();
+  }
+  Serial.println("WebServer ready!   "); 
+
 }
 void printTimeToBuffer(time_t t, char *tz)
 {
@@ -602,9 +561,9 @@ void loop(void)
                 fixed[k]=0;
               }
             }
-            byte* sprite=font[moving[0]- 32];
-            byte* newsprite=font[mnew[0]- 32];
-            byte* destination=font['M'- 32];
+            byte* sprite=clockfont[moving[0]- 32];
+            byte* newsprite=clockfont[mnew[0]- 32];
+            byte* destination=clockfont['M'- 32];
             for(int l=0;l<4;++l)
             {
               for(int m=0;m<8;++m)
@@ -612,9 +571,10 @@ void loop(void)
                 destination[m]=(sprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
               }
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
+     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
             }
             for(int l=4;l>0;--l)
@@ -630,10 +590,11 @@ void loop(void)
                 destination[7-m]|=destination[7-m+1];
                 destination[7-m+1]=0;
               }
-              drawString(fixed, i, (s%2)+16, 0);
-              drawString(emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+16, 0);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
-              delay(ANIM_DELAY*2);
+    marqueeserver.handleClient();   // checks for incoming messages
+             delay(ANIM_DELAY*2);
             }
           }
           break;    
@@ -667,9 +628,9 @@ void loop(void)
                 fixed[k]=0;
               }
             }
-            byte* sprite=font[moving[0]- 32];
-            byte* newsprite=font[mnew[0]- 32];
-            byte* destination=font['M'- 32];
+            byte* sprite=clockfont[moving[0]- 32];
+            byte* newsprite=clockfont[mnew[0]- 32];
+            byte* destination=clockfont['M'- 32];
             for(int m=0;m<8;++m)
             {
               destination[m]=sprite [m];
@@ -680,10 +641,11 @@ void loop(void)
               destination[l]=0;
               destination[7-l]|=destination[7-l+1];
               destination[7-l+1]=0;
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
-              delay(ANIM_DELAY*2);
+    marqueeserver.handleClient();   // checks for incoming messages
+             delay(ANIM_DELAY*2);
             }
             for(int l=4;l>0;--l)
             {
@@ -698,10 +660,11 @@ void loop(void)
                 destination[7-m]|=destination[7-m+1];
                 destination[7-m+1]=0;
               }
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
-              delay(ANIM_DELAY*2);
+    marqueeserver.handleClient();   // checks for incoming messages
+             delay(ANIM_DELAY*2);
             }
           }
           break;    
@@ -735,9 +698,9 @@ void loop(void)
                 fixed[k]=0;
               }
             }
-            byte* sprite=font[moving[0]- 32];
-            byte* newsprite=font[mnew[0]- 32];
-            byte* destination=font['M'- 32];
+            byte* sprite=clockfont[moving[0]- 32];
+            byte* newsprite=clockfont[mnew[0]- 32];
+            byte* destination=clockfont['M'- 32];
             for(int m=0;m<8;++m)
             {
               destination[m]=sprite [m];
@@ -748,9 +711,10 @@ void loop(void)
               destination[l]=0;
               destination[7-l]|=destination[7-l+1];
               destination[7-l+1]=0;
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
+    marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
             }
             for(int l=3;l>=0;--l)
@@ -760,9 +724,10 @@ void loop(void)
                 destination[m]=(newsprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
               }
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
+    marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
             }
           }
@@ -797,9 +762,9 @@ void loop(void)
                 fixed[k]=0;
               }
             }
-            byte* sprite=font[moving[0]- 32];
-            byte* newsprite=font[mnew[0]- 32];
-            byte* destination=font['M'- 32];
+            byte* sprite=clockfont[moving[0]- 32];
+            byte* newsprite=clockfont[mnew[0]- 32];
+            byte* destination=clockfont['M'- 32];
             for(int l=0;l<4;++l)
             {
               for(int m=0;m<8;++m)
@@ -807,9 +772,10 @@ void loop(void)
                 destination[m]=(sprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
               }
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
+    marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
             }
             for(int l=3;l>=0;--l)
@@ -819,9 +785,10 @@ void loop(void)
                 destination[m]=(newsprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
               }
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
+    marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
             }
           }
@@ -864,9 +831,10 @@ void loop(void)
             
             for(int l=j*8+(LEDMATRIX_WIDTH+1-32)/2;l<32+(LEDMATRIX_WIDTH+1-32);++l)
             {
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(moving, 1, (s%2)+l, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,moving, 1, (s%2)+l, 0);
               lmd.display();
+    marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY);
             }
           }
@@ -896,9 +864,10 @@ void loop(void)
             
             for(int l=32+(LEDMATRIX_WIDTH+1-32);l>=j*8+(LEDMATRIX_WIDTH+1-32)/2;--l)
             {
-              drawString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(moving, 1, (s%2)+l, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawString(clockfont,moving, 1, (s%2)+l, 0);
               lmd.display();
+    marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY);
             }
           }
@@ -919,17 +888,19 @@ void loop(void)
           int y=-8;
           while(y<2)
           {
-          drawString(lcdBufOld, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+          drawString(clockfont,lcdBufOld, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
           
-           drawString(oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y);
-           drawString(unten, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y+8);
+           drawString(clockfont,oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y);
+           drawString(clockfont,unten, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y+8);
             lmd.display();
            ++y;
+    marqueeserver.handleClient();   // checks for incoming messages
            delay(ANIM_DELAY);
           }
-           drawString(oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, 0);
+           drawString(clockfont,oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, 0);
     //      drawString(lcdBuf, i, (s%2), 0);
             lmd.display();
+    marqueeserver.handleClient();   // checks for incoming messages
            delay(ANIM_DELAY);
         }
       }
@@ -937,8 +908,29 @@ void loop(void)
   }
   if(changeDetected==0)
   {
+//    Serial.println(maxRuns);
+//    Serial.println(runs);
+//    Serial.println("--");
+    if((maxRuns<1)||(runs<maxRuns))
+    {
+      int msgLen=decodedMsg.length();
+      for ( int i =  -LEDMATRIX_WIDTH; i < width * msgLen + LEDMATRIX_WIDTH  - spacer; i++ ) {
+        marqueeserver.handleClient();   // checks for incoming messages
+    
+        int letter = i / width;
+        int y = 0;//(matrix.height() - 8) / 2; // center the text vertically
+//     Serial.print((char *)decodedMsg.c_str());
+//     Serial.println(i);
+        drawString(marqueeFont,(char *)decodedMsg.c_str(), msgLen, -i, y);
+    lmd.display();
+    
+        delay(wait);
+      }
+      ++runs;
+    }
+
     // Draw the text to the current position
-    drawString(lcdBuf, 4, (s%2)+16, 0);
+    drawString(clockfont,lcdBuf, 4, (s%2)+16, 0);
     // In case you wonder why we don't have to call lmd.clear() in every loop: The font has a opaque (black) background...
     
     // Toggle display of the new framebuffer
@@ -954,6 +946,8 @@ void loop(void)
       animcounter=random(30,100);
     }
   }
+    marqueeserver.handleClient();   // checks for incoming messages
+
   double sensorValue = analogRead(A0);
 //  Serial.println(sensorValue);
   intensity=(int)(((sensorValue/1024.0)*(sensorValue/1024.0))*10.0);
@@ -968,7 +962,7 @@ int getRandomNumber(int startNum, int endNum) {
 /**
  * This function draws a string of the given length to the given position.
  */
-void drawString(char* text, int len, int x, int y )
+void drawString(byte font[][8],char* text, int len, int x, int y )
 {
   for( int idx = 0; idx < len; idx ++ )
   {
@@ -1005,5 +999,61 @@ void drawSprite( byte* sprite, int x, int y, int width, int height )
     // reset column mask
     mask = B10000000;
   }
+}
+
+void handle_msg() {
+                        
+//  matrix.fillScreen(LOW);
+  marqueeserver.send(200, "text/html", form);    // Send same page so they can send another msg
+  refresh=0;
+  runs=0;
+  
+  
+  msg = marqueeserver.arg("msg");
+  String runsI=marqueeserver.arg("maxRuns");
+  maxRuns=runsI.toInt();
+  String spdI=marqueeserver.arg("scrSp");
+  wait=spdI.toInt();
+  Serial.println(wait);
+  if(wait<5)
+    wait=5;
+  else if(wait>80)
+    wait=80;
+  decodedMsg = msg;
+  // Restore special characters that are misformed to %char by the client browser
+  decodedMsg.replace("+", " ");      
+  decodedMsg.replace("%21", "!");  
+  decodedMsg.replace("%22", "");  
+  decodedMsg.replace("%23", "#");
+  decodedMsg.replace("%24", "$");
+  decodedMsg.replace("%25", "%");  
+  decodedMsg.replace("%26", "&");
+  decodedMsg.replace("%27", "'");  
+  decodedMsg.replace("%28", "(");
+  decodedMsg.replace("%29", ")");
+  decodedMsg.replace("%2A", "*");
+  decodedMsg.replace("%2B", "+");  
+  decodedMsg.replace("%2C", ",");  
+  decodedMsg.replace("%2F", "/");   
+  decodedMsg.replace("%3A", ":");    
+  decodedMsg.replace("%3B", ";");  
+  decodedMsg.replace("%3C", "<");  
+  decodedMsg.replace("%3D", "=");  
+  decodedMsg.replace("%3E", ">");
+  decodedMsg.replace("%3F", "?");  
+  decodedMsg.replace("%40", "@"); 
+
+  decodedMsg.toUpperCase();   // Had to convert the string to upper case.  weird shit happened with lower case.  Why?
+
+// Save decoded message to SPIFFS file for playback on power up.
+  File f = SPIFFS.open("/msgf.txt", "w");
+  if (!f) {
+    Serial.println("File open failed!");
+  } else {
+    Serial.print("Entered Message was: ");
+    Serial.print(decodedMsg);
+  f.print(decodedMsg);
+  }
+  f.close();
 }
 
