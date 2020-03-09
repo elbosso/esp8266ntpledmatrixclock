@@ -46,6 +46,7 @@
 //needed for wifimanager
 #include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <PubSubClient.h>
 
 //
 // Debug messages over the serial console.
@@ -159,6 +160,12 @@ int runs=0;
 
 long period;
 int offset=1,refresh=0;
+
+bool shouldDisplayClock = true;
+
+const char* MQTT_BROKER = "192.168.10.2";
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 
 //callback notifying us of the need to save config
@@ -465,6 +472,8 @@ void setup(void)
     marqueeserver.send(200, "text/html", form);
   });
   marqueeserver.on("/msg", handle_msg);
+  marqueeserver.on("/cdispoff", handle_cdispoff);
+  marqueeserver.on("/cdispon", handle_cdispon);
   marqueeserver.begin();
   
 // ***************** INITIAL READY & Read stored message from SPIFFS ****************
@@ -478,8 +487,53 @@ void setup(void)
     fr.close();
   }
   Serial.println("WebServer ready!   "); 
+    client.setServer(MQTT_BROKER, 1883);
+    client.setCallback(callback);
 
 }
+void callback(char* topic, byte* payload, unsigned int length) {
+    Serial.print("Received message [");
+    Serial.print(topic);
+    Serial.print("] ");
+    char msg[length+1];
+    for (int i = 0; i < length; i++) {
+        Serial.print((char)payload[i]);
+        msg[i] = (char)payload[i];
+    }
+    Serial.println();
+ 
+    msg[length] = '\0';
+    if(strcmp(topic,"home/clockMessage")==0){
+      lmd.clear();
+      lmd.display();
+      decodedMsg=String(msg);
+      decodedMsg.toUpperCase();   // Had to convert the string to upper case.  weird shit happened with lower case.  Why?
+      runs=0;
+      maxRuns=1;
+    }
+    if(strcmp(topic,"home/clockDispOff")==0){
+      lmd.clear();
+      lmd.display();
+      shouldDisplayClock=false;
+    }
+    if(strcmp(topic,"home/clockDispOn")==0){
+      shouldDisplayClock=true;
+    }
+}
+void reconnect() {
+    while (!client.connected()) {
+        Serial.print("Reconnecting...");
+        if (!client.connect("ESP8266NtpMatrixClockClientSub")) {
+            Serial.print("failed, rc=");
+            Serial.print(client.state());
+            Serial.println(" retrying in 5 seconds");
+            delay(5000);
+        }
+    }
+    client.subscribe("home/#");
+    Serial.println("MQTT Connected...");
+}
+
 void printTimeToBuffer(time_t t, char *tz)
 {
   //this is needed because dayShortStr and monthShortStr obviously use the same buffer so we get
@@ -504,6 +558,10 @@ void printTimeToLCDBuffer(time_t t, char *tz)
 
 void loop(void)
 {
+    if (!client.connected()) {
+        reconnect();
+    }
+    client.loop();
   ++loopcounter;
   sprintf(lcdBufOld,"%s",lcdBuf);
   timeClient.update();
@@ -533,6 +591,8 @@ void loop(void)
 //  sprintf(lcdBuf, "%04d", ++counter);
   int changeDetected=0;
 //  animationmode=0;
+  if(shouldDisplayClock==true)
+  {
   switch(animationmode)
   {
     case 5:
@@ -906,6 +966,7 @@ void loop(void)
       }
     }
   }
+  }
   if(changeDetected==0)
   {
 //    Serial.println(maxRuns);
@@ -928,7 +989,8 @@ void loop(void)
       }
       ++runs;
     }
-
+    if(shouldDisplayClock==true)
+    {
     // Draw the text to the current position
     drawString(clockfont,lcdBuf, 4, (s%2)+16, 0);
     // In case you wonder why we don't have to call lmd.clear() in every loop: The font has a opaque (black) background...
@@ -936,6 +998,7 @@ void loop(void)
     // Toggle display of the new framebuffer
     lmd.display();
     delay(1000);
+    }
   }
   else
   {
@@ -1003,7 +1066,8 @@ void drawSprite( byte* sprite, int x, int y, int width, int height )
 
 void handle_msg() {
                         
-//  matrix.fillScreen(LOW);
+      lmd.clear();
+      lmd.display();
   marqueeserver.send(200, "text/html", form);    // Send same page so they can send another msg
   refresh=0;
   runs=0;
@@ -1055,5 +1119,17 @@ void handle_msg() {
   f.print(decodedMsg);
   }
   f.close();
+}
+
+void handle_cdispoff() {
+  lmd.clear();
+  lmd.display();
+  shouldDisplayClock=false;
+  marqueeserver.send(200, "text/html", form);    // Send same page so they can send another msg
+}
+
+void handle_cdispon() {
+  shouldDisplayClock=true;
+  marqueeserver.send(200, "text/html", form);    // Send same page so they can send another msg
 }
 
