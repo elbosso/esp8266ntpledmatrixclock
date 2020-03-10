@@ -111,7 +111,7 @@ Timezone CE(CEST, CET);
 const uint8_t LEDMATRIX_CS_PIN = 4;
 
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7
-const int LEDMATRIX_WIDTH = 31;  
+const int LEDMATRIX_WIDTH = 63;  
 const int LEDMATRIX_HEIGHT = 7;
 const int LEDMATRIX_SEGMENTS = (LEDMATRIX_WIDTH+1)/8;
 
@@ -146,8 +146,6 @@ int animationmode;
 
 int loopcounter=95;
 
-int numberOfHorizontalDisplays = 12;
-int numberOfVerticalDisplays = 1;
 String decodedMsg;
 String msg;
 String testMsg = "I LOVE MY HOT ASIAN SWEETNESS!!!!!!";
