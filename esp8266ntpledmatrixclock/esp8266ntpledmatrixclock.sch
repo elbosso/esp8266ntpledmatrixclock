@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:esp8266ntpledmatrixclock-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -73,7 +74,7 @@ L Device:R_POT_TRIM RV1
 U 1 1 5E5BB8E9
 P 6550 3500
 F 0 "RV1" H 6480 3546 50  0000 R CNN
-F 1 "R_POT_TRIM" H 6480 3455 50  0000 R CNN
+F 1 "30K" H 6480 3455 50  0000 R CNN
 F 2 "Potentiometer_THT:Potentiometer_Bourns_3386F_Vertical" H 6550 3500 50  0001 C CNN
 F 3 "~" H 6550 3500 50  0001 C CNN
 	1    6550 3500
