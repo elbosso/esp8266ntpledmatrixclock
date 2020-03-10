@@ -45,3 +45,14 @@ The define `AT_HOME` also decides which pair of WIFI credentials are to be used.
 Instructions for setting up the arduino IDE to actually be able to transfer the code to a Wemos D1 (clone) can be found [here](https://averagemaker.com/2018/03/wemos-d1-mini-setup.html)
 
 And so we have a nifty little clock...
+
+## Important Update
+
+This project continues the work originally started in this project: https://github.com/elbosso/ESP8266-WiFi-Marquee
+
+The new features include:
+
+* offering a HTTP interface for specifying arbitrary text that is displayed using running text
+* offering an MQTT interface for the same reasons
+* allowing to switch the display of the time on and off both via HTTP and MQTT
+* possibility to use arbitrarily many chained display modules
