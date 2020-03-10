@@ -522,13 +522,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
 }
 void reconnect() {
-    while (!client.connected()) {
+     if /*while*/ (!client.connected()) {
         Serial.print("Reconnecting...");
         if (!client.connect("ESP8266NtpMatrixClockClientSub")) {
             Serial.print("failed, rc=");
             Serial.print(client.state());
-            Serial.println(" retrying in 5 seconds");
-            delay(5000);
+            //combine with while!
+            //Serial.println(" retrying in 5 seconds");
+            //delay(5000);
         }
     }
     client.subscribe("home/#");
@@ -982,7 +983,7 @@ void loop(void)
         int letter = i / width;
         int y = 0;//(matrix.height() - 8) / 2; // center the text vertically
 //     Serial.print((char *)decodedMsg.c_str());
-     Serial.println(i);
+//     Serial.println(i);
         drawString(marqueeFont,(char *)decodedMsg.c_str(), msgLen, -i, y,true);
     lmd.display();
     
