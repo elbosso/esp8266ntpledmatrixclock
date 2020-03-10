@@ -111,7 +111,7 @@ Timezone CE(CEST, CET);
 const uint8_t LEDMATRIX_CS_PIN = 4;
 
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7
-const int LEDMATRIX_WIDTH = 63;  
+const int LEDMATRIX_WIDTH = 31;  
 const int LEDMATRIX_HEIGHT = 7;
 const int LEDMATRIX_SEGMENTS = (LEDMATRIX_WIDTH+1)/8;
 
@@ -481,7 +481,7 @@ void setup(void)
     while(fr.available()) {
     String line = fr.readStringUntil('n');
  //   Serial.println(line);
-    decodedMsg = String("IP ")+WiFi.localIP().toString();//line;
+    decodedMsg = String("IP ")+WiFi.localIP().toString()+String(" ");//line;
     Serial.print("initial message: ");
     Serial.println(decodedMsg.c_str());
     fr.close();
@@ -507,7 +507,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
       lmd.clear();
       lmd.display();
       decodedMsg=String(msg);
-      decodedMsg.toUpperCase();   // Had to convert the string to upper case.  weird shit happened with lower case.  Why?
+      decodedMsg.concat(" ");
+      //decodedMsg.toUpperCase();   // Had to convert the string to upper case.  weird shit happened with lower case.  Why?
       runs=0;
       maxRuns=1;
     }
@@ -631,8 +632,8 @@ void loop(void)
                 destination[m]=(sprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
               lmd.display();
      marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -650,8 +651,8 @@ void loop(void)
                 destination[7-m]|=destination[7-m+1];
                 destination[7-m+1]=0;
               }
-              drawString(clockfont,fixed, i, (s%2)+16, 0);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+16, 0,false);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
              delay(ANIM_DELAY*2);
@@ -701,8 +702,8 @@ void loop(void)
               destination[l]=0;
               destination[7-l]|=destination[7-l+1];
               destination[7-l+1]=0;
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
              delay(ANIM_DELAY*2);
@@ -720,8 +721,8 @@ void loop(void)
                 destination[7-m]|=destination[7-m+1];
                 destination[7-m+1]=0;
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
              delay(ANIM_DELAY*2);
@@ -771,8 +772,8 @@ void loop(void)
               destination[l]=0;
               destination[7-l]|=destination[7-l+1];
               destination[7-l+1]=0;
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -784,8 +785,8 @@ void loop(void)
                 destination[m]=(newsprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -832,8 +833,8 @@ void loop(void)
                 destination[m]=(sprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -845,8 +846,8 @@ void loop(void)
                 destination[m]=(newsprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -891,8 +892,8 @@ void loop(void)
             
             for(int l=j*8+(LEDMATRIX_WIDTH+1-32)/2;l<32+(LEDMATRIX_WIDTH+1-32);++l)
             {
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,moving, 1, (s%2)+l, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,moving, 1, (s%2)+l, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY);
@@ -924,8 +925,8 @@ void loop(void)
             
             for(int l=32+(LEDMATRIX_WIDTH+1-32);l>=j*8+(LEDMATRIX_WIDTH+1-32)/2;--l)
             {
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
-              drawString(clockfont,moving, 1, (s%2)+l, 0);
+              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+              drawString(clockfont,moving, 1, (s%2)+l, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY);
@@ -948,16 +949,16 @@ void loop(void)
           int y=-8;
           while(y<2)
           {
-          drawString(clockfont,lcdBufOld, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+          drawString(clockfont,lcdBufOld, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
           
-           drawString(clockfont,oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y);
-           drawString(clockfont,unten, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y+8);
+           drawString(clockfont,oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y,false);
+           drawString(clockfont,unten, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y+8,false);
             lmd.display();
            ++y;
     marqueeserver.handleClient();   // checks for incoming messages
            delay(ANIM_DELAY);
           }
-           drawString(clockfont,oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, 0);
+           drawString(clockfont,oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
     //      drawString(lcdBuf, i, (s%2), 0);
             lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
@@ -981,8 +982,8 @@ void loop(void)
         int letter = i / width;
         int y = 0;//(matrix.height() - 8) / 2; // center the text vertically
 //     Serial.print((char *)decodedMsg.c_str());
-//     Serial.println(i);
-        drawString(marqueeFont,(char *)decodedMsg.c_str(), msgLen, -i, y);
+     Serial.println(i);
+        drawString(marqueeFont,(char *)decodedMsg.c_str(), msgLen, -i, y,true);
     lmd.display();
     
         delay(wait);
@@ -992,7 +993,7 @@ void loop(void)
     if(shouldDisplayClock==true)
     {
     // Draw the text to the current position
-    drawString(clockfont,lcdBuf, 4, (s%2)+16, 0);
+    drawString(clockfont,lcdBuf, 4, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
     // In case you wonder why we don't have to call lmd.clear() in every loop: The font has a opaque (black) background...
     
     // Toggle display of the new framebuffer
@@ -1025,7 +1026,7 @@ int getRandomNumber(int startNum, int endNum) {
 /**
  * This function draws a string of the given length to the given position.
  */
-void drawString(byte font[][8],char* text, int len, int x, int y )
+void drawString(byte font[][8],char* text, int len, int x, int y ,boolean reverse)
 {
   for( int idx = 0; idx < len; idx ++ )
   {
@@ -1037,30 +1038,52 @@ void drawString(byte font[][8],char* text, int len, int x, int y )
 
     // only draw if char is visible
     if( 8 + x + idx * 8 > 0 )
-      drawSprite( font[c], x + idx * 8, y, 8, 8 );
+      drawSprite( font[c], x + idx * 8, y, 8, 8 ,reverse);
   }
 }
 
 /**
  * This draws a sprite to the given position using the width and height supplied (usually 8x8)
  */
-void drawSprite( byte* sprite, int x, int y, int width, int height )
+void drawSprite( byte* sprite, int x, int y, int width, int height ,boolean reverse)
 {
-  // The mask is used to get the column bit from the sprite row
-  byte mask = B10000000;
-  
-  for( int iy = 0; iy < height; iy++ )
+  if(reverse==false)
   {
-    for( int ix = 0; ix < width; ix++ )
+    // The mask is used to get the column bit from the sprite row
+    byte mask = B10000000;
+    
+    for( int iy = 0; iy < height; iy++ )
     {
-      lmd.setPixel(x + ix, y + iy, (bool)(sprite[iy] & mask ));
-
-      // shift the mask by one pixel to the right
-      mask = mask >> 1;
+      for( int ix = 0; ix < width; ix++ )
+      {
+        lmd.setPixel(x + ix, y + iy, (bool)(sprite[iy] & mask ));
+  
+        // shift the mask by one pixel to the right
+        mask = mask >> 1;
+      }
+  
+      // reset column mask
+      mask = B10000000;
     }
-
-    // reset column mask
-    mask = B10000000;
+  }
+  else
+  {
+    // The mask is used to get the column bit from the sprite row
+    byte mask = B1;
+    
+    for( int iy = 0; iy < height; iy++ )
+    {
+      for( int ix = 0; ix < width; ix++ )
+      {
+        lmd.setPixel(x + ix, y + iy, (bool)(sprite[iy] & mask ));
+  
+        // shift the mask by one pixel to the right
+        mask = mask << 1;
+      }
+  
+      // reset column mask
+      mask = B1;
+    }
   }
 }
 
@@ -1107,7 +1130,8 @@ void handle_msg() {
   decodedMsg.replace("%3F", "?");  
   decodedMsg.replace("%40", "@"); 
 
-  decodedMsg.toUpperCase();   // Had to convert the string to upper case.  weird shit happened with lower case.  Why?
+  decodedMsg.concat(" ");
+  //decodedMsg.toUpperCase();   // Had to convert the string to upper case.  weird shit happened with lower case.  Why?
 
 // Save decoded message to SPIFFS file for playback on power up.
   File f = SPIFFS.open("/msgf.txt", "w");
