@@ -136,7 +136,7 @@ char oben[2];
 char unten[2];
 
 char fixed[5];
-char moving[5];
+char moving[6];
 char mnew[5];
 
 char emm[]="M";
@@ -144,7 +144,7 @@ char emm[]="M";
 int animcounter;
 int animationmode;
 
-int loopcounter=0;
+int loopcounter=95;
 
 int numberOfHorizontalDisplays = 12;
 int numberOfVerticalDisplays = 1;
@@ -486,6 +486,8 @@ void setup(void)
     Serial.println(decodedMsg.c_str());
     fr.close();
   }
+//uncomment to skip initial display of ip address  
+//  runs=maxRuns=1;
   Serial.println("WebServer ready!   "); 
     client.setServer(MQTT_BROKER, 1883);
     client.setCallback(callback);
@@ -592,12 +594,18 @@ void loop(void)
   lcdBuf[1]=lcdBuf[1]-15;
 //  sprintf(lcdBuf, "%04d", ++counter);
   int changeDetected=0;
-//  animationmode=0;
+//  animationmode=1;
+  //5:horizontal shrink, vertical grow
+  //4:vertical shrink, vertical grow
+  //3:vertical shrink, horizontal grow
+  //2:horizontal shrink, horizontal grow
+  //1:shift out to right, shift in from right
+  //default:roll from top
   if(shouldDisplayClock==true)
   {
   switch(animationmode)
   {
-    case 5:
+    case 5: //5:horizontal shrink, vertical grow
     {
       int decimal=5;
       for(int i=0;i<4;++i)
@@ -664,7 +672,7 @@ void loop(void)
       }
       break;
     }
-    case 4:
+    case 4://4:vertical shrink, vertical grow
     {
       int decimal=5;
       for(int i=0;i<4;++i)
@@ -734,7 +742,7 @@ void loop(void)
       }
       break;
     }
-    case 3:
+    case 3://3:vertical shrink, horizontal grow
     {
       int decimal=5;
       for(int i=0;i<4;++i)
@@ -798,7 +806,7 @@ void loop(void)
       }
       break;
     }
-    case 2:
+    case 2://2:horizontal shrink, horizontal grow
     {
       int decimal=5;
       for(int i=0;i<4;++i)
@@ -859,7 +867,7 @@ void loop(void)
       }
       break;
     }
-    case 1:
+    case 1://1:shift out to right, shift in from right
     {
       int decimal=5;
       for(int i=0;i<4;++i)
@@ -891,7 +899,18 @@ void loop(void)
               Serial.println(moving);
             }
             
-            for(int l=j*8+(LEDMATRIX_WIDTH+1-32)/2;l<32+(LEDMATRIX_WIDTH+1-32);++l)
+/*            int cc=0;
+            while(moving[cc]!=0)
+            {
+              ++cc;
+              if(moving[cc]==0)
+              {
+                moving[cc]=' ';
+                moving[cc+1]=0;
+                break;
+              }
+            }
+*/            for(int l=j*8+(LEDMATRIX_WIDTH+1-32)/2;l<32+(LEDMATRIX_WIDTH+1-32);++l)
             {
               drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
               drawString(clockfont,moving, 1, (s%2)+l, 0,false);
@@ -924,10 +943,12 @@ void loop(void)
               Serial.println(moving);
             }
             
+            moving[1]=' ';
+            moving[2]=0;
             for(int l=32+(LEDMATRIX_WIDTH+1-32);l>=j*8+(LEDMATRIX_WIDTH+1-32)/2;--l)
             {
               drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,moving, 1, (s%2)+l, 0,false);
+              drawString(clockfont,moving, 2, (s%2)+l, 0,false);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY);
@@ -938,7 +959,7 @@ void loop(void)
       }
       break;
     }
-    default:
+    default://default:roll from top
     {
       for(int i=3;i>-1;--i)
       {
