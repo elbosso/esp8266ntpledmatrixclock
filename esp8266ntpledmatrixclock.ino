@@ -64,6 +64,7 @@
 #include "wifi_security.h"
 #include "clock_font.h"
 #include "marquee_font.h"
+#include "marquee_font1.h"
 #include "marquee_form.h"
 
 /**
@@ -86,15 +87,19 @@ int gpio0Switch = 5;
 
 unsigned long previousMillis = 0;
 
+boolean bold=false;
+
 WiFiUDP ntpUDP;
 
 // By default 'pool.ntp.org' is used with 60 seconds update interval and
 // no offset
 #ifdef AT_HOME
-NTPClient timeClient(ntpUDP, "192.168.10.2");
+const char* NTP_SERVER = "192.168.10.2";
 #else
-NTPClient timeClient(ntpUDP, "2.de.pool.ntp.org");
+const char* NTP_SERVER = "2.de.pool.ntp.org";
 #endif
+
+NTPClient timeClient(ntpUDP, NTP_SERVER);
 
 // You can specify the time server pool and the offset, (in seconds)
 // additionaly you can specify the update interval (in milliseconds).
@@ -148,7 +153,6 @@ int loopcounter=95;
 
 String decodedMsg;
 String msg;
-String testMsg = "I LOVE MY HOT ASIAN SWEETNESS!!!!!!";
 int wait = 75; // In milliseconds
 
 int spacer = 2;
@@ -409,6 +413,7 @@ void setup(void)
 
   timeClient.begin();
   Serial.println("NTP client started");
+  Serial.println(NTP_SERVER);
   timeClient.update();
   Serial.println(timeClient.getFormattedTime());
   unsigned long epoch = timeClient.getEpochTime();
@@ -472,6 +477,7 @@ void setup(void)
   marqueeserver.on("/msg", handle_msg);
   marqueeserver.on("/cdispoff", handle_cdispoff);
   marqueeserver.on("/cdispon", handle_cdispon);
+  marqueeserver.on("/cdisptoggle", handle_cdisptoggle);
   marqueeserver.begin();
   
 // ***************** INITIAL READY & Read stored message from SPIFFS ****************
@@ -560,10 +566,12 @@ void printTimeToLCDBuffer(time_t t, char *tz)
 
 void loop(void)
 {
+  #ifdef AT_HOME
     if (!client.connected()) {
         reconnect();
     }
     client.loop();
+  #endif
   ++loopcounter;
   sprintf(lcdBufOld,"%s",lcdBuf);
   timeClient.update();
@@ -639,8 +647,8 @@ void loop(void)
                 destination[m]=(sprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
      marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -658,8 +666,8 @@ void loop(void)
                 destination[7-m]|=destination[7-m+1];
                 destination[7-m+1]=0;
               }
-              drawString(clockfont,fixed, i, (s%2)+16, 0,false);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
+              drawClockString(fixed, i, (s%2)+16, 0);
+              drawClockString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
              delay(ANIM_DELAY*2);
@@ -709,8 +717,8 @@ void loop(void)
               destination[l]=0;
               destination[7-l]|=destination[7-l+1];
               destination[7-l+1]=0;
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
              delay(ANIM_DELAY*2);
@@ -728,8 +736,8 @@ void loop(void)
                 destination[7-m]|=destination[7-m+1];
                 destination[7-m+1]=0;
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
              delay(ANIM_DELAY*2);
@@ -779,8 +787,8 @@ void loop(void)
               destination[l]=0;
               destination[7-l]|=destination[7-l+1];
               destination[7-l+1]=0;
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -792,8 +800,8 @@ void loop(void)
                 destination[m]=(newsprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -840,8 +848,8 @@ void loop(void)
                 destination[m]=(sprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((sprite [m]<<l)&0x0F);
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -853,8 +861,8 @@ void loop(void)
                 destination[m]=(newsprite [m]>>l)&0xF0;
                 destination[m]=destination[m]|((newsprite [m]<<l)&0x0F);
               }
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,emm, 1, (s%2)+(jj)*8, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(emm, 1, (s%2)+(jj)*8, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY*2);
@@ -910,8 +918,8 @@ void loop(void)
             }
 */            for(int l=j*8+(LEDMATRIX_WIDTH+1-32)/2;l<32+(LEDMATRIX_WIDTH+1-32);++l)
             {
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,moving, 1, (s%2)+l, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(moving, 1, (s%2)+l, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY);
@@ -945,8 +953,8 @@ void loop(void)
             moving[2]=0;
             for(int l=32+(LEDMATRIX_WIDTH+1-32);l>=j*8+(LEDMATRIX_WIDTH+1-32)/2;--l)
             {
-              drawString(clockfont,fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
-              drawString(clockfont,moving, 2, (s%2)+l, 0,false);
+              drawClockString(fixed, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
+              drawClockString(moving, 2, (s%2)+l, 0);
               lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
               delay(ANIM_DELAY);
@@ -969,16 +977,16 @@ void loop(void)
           int y=-8;
           while(y<2)
           {
-          drawString(clockfont,lcdBufOld, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+          drawClockString(lcdBufOld, i, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
           
-           drawString(clockfont,oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y,false);
-           drawString(clockfont,unten, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y+8,false);
+           drawClockString(oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y);
+           drawClockString(unten, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, y+8);
             lmd.display();
            ++y;
     marqueeserver.handleClient();   // checks for incoming messages
            delay(ANIM_DELAY);
           }
-           drawString(clockfont,oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+           drawClockString(oben, 1, (s%2)+i*8+(LEDMATRIX_WIDTH+1-32)/2, 0);
     //      drawString(lcdBuf, i, (s%2), 0);
             lmd.display();
     marqueeserver.handleClient();   // checks for incoming messages
@@ -1003,7 +1011,7 @@ void loop(void)
         int y = 0;//(matrix.height() - 8) / 2; // center the text vertically
 //     Serial.print((char *)decodedMsg.c_str());
 //     Serial.println(i);
-        drawString(marqueeFont,(char *)decodedMsg.c_str(), msgLen, -i, y,true);
+        drawMarqueeString((char *)decodedMsg.c_str(), msgLen, -i, y);
     lmd.display();
     
         delay(wait);
@@ -1013,7 +1021,7 @@ void loop(void)
     if(shouldDisplayClock==true)
     {
     // Draw the text to the current position
-    drawString(clockfont,lcdBuf, 4, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0,false);
+    drawClockString(lcdBuf, 4, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
     // In case you wonder why we don't have to call lmd.clear() in every loop: The font has a opaque (black) background...
     
     // Toggle display of the new framebuffer
@@ -1046,19 +1054,30 @@ int getRandomNumber(int startNum, int endNum) {
 /**
  * This function draws a string of the given length to the given position.
  */
-void drawString(byte font[][8],char* text, int len, int x, int y ,boolean reverse)
+void drawClockString(char* text, int len, int x, int y)
+{
+  drawString(clockfont, text,  len,  x,  y, false,8);
+}
+void drawMarqueeString(char* text, int len, int x, int y)
+{
+  if(bold)
+    drawString(marqueeFont, text,  len,  x,  y, false,8);
+  else
+    drawString(marqueeFont1, text,  len,  x,  y, false,6);
+}
+void drawString(byte font[][8],char* text, int len, int x, int y ,boolean reverse,int fontwidth)
 {
   for( int idx = 0; idx < len; idx ++ )
   {
     int c = text[idx] - 32;
 
     // stop if char is outside visible area
-    if( x + idx * 8  > LEDMATRIX_WIDTH )
+    if( x + idx * fontwidth  > LEDMATRIX_WIDTH )
       return;
 
     // only draw if char is visible
-    if( 8 + x + idx * 8 > 0 )
-      drawSprite( font[c], x + idx * 8, y, 8, 8 ,reverse);
+    if( fontwidth + x + idx * fontwidth > 0 )
+      drawSprite( font[c], x + idx * fontwidth, y, fontwidth, 8 ,reverse);
   }
 }
 
@@ -1070,7 +1089,7 @@ void drawSprite( byte* sprite, int x, int y, int width, int height ,boolean reve
   if(reverse==false)
   {
     // The mask is used to get the column bit from the sprite row
-    byte mask = B10000000;
+    byte mask = B10000000>>(8-width);
     
     for( int iy = 0; iy < height; iy++ )
     {
@@ -1083,7 +1102,7 @@ void drawSprite( byte* sprite, int x, int y, int width, int height ,boolean reve
       }
   
       // reset column mask
-      mask = B10000000;
+      mask = B10000000>>(8-width);
     }
   }
   else
@@ -1126,6 +1145,12 @@ void handle_msg() {
     wait=5;
   else if(wait>80)
     wait=80;
+  String boldI=marqueeserver.arg("boldFont");
+  Serial.println(boldI);
+  if(strcmp(boldI.c_str(),"on")==0)
+    bold=true;
+  else
+    bold=false;
   decodedMsg = msg;
   // Restore special characters that are misformed to %char by the client browser
   decodedMsg.replace("+", " ");      
@@ -1175,5 +1200,12 @@ void handle_cdispoff() {
 void handle_cdispon() {
   shouldDisplayClock=true;
   marqueeserver.send(200, "text/html", form);    // Send same page so they can send another msg
+}
+
+void handle_cdisptoggle() {
+  if(shouldDisplayClock==true)
+    handle_cdispoff();
+  else
+    handle_cdispon();
 }
 
