@@ -165,7 +165,7 @@ int offset=1,refresh=0;
 
 bool shouldDisplayClock = true;
 
-const char* MQTT_BROKER = "192.168.10.2";
+const char* MQTT_BROKER = "mqtt.pi-docker.lab";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -484,12 +484,12 @@ void setup(void)
     File fr = SPIFFS.open("/msgf.txt", "r");
     while(fr.available()) {
     String line = fr.readStringUntil('n');
+  }
  //   Serial.println(line);
     decodedMsg = String("IP ")+WiFi.localIP().toString()+String(" ");//line;
     Serial.print("initial message: ");
     Serial.println(decodedMsg.c_str());
     fr.close();
-  }
 //uncomment to skip initial display of ip address  
 //  runs=maxRuns=1;
   Serial.println("WebServer ready!   "); 
@@ -509,7 +509,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
  
     msg[length] = '\0';
-    if(strcmp(topic,"home/clockMessage")==0){
+    if((strcmp(topic,"home/clock/message")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/message")))){
       lmd.clear();
       lmd.display();
       decodedMsg=String(msg);
@@ -518,19 +518,19 @@ void callback(char* topic, byte* payload, unsigned int length) {
       runs=0;
       maxRuns=1;
     }
-    if(strcmp(topic,"home/clockDispOff")==0){
+    if(strcmp(topic,"home/clock/dispOff")==0){
       lmd.clear();
       lmd.display();
       shouldDisplayClock=false;
     }
-    if(strcmp(topic,"home/clockDispOn")==0){
+    if(strcmp(topic,"home/clock/dispOn")==0){
       shouldDisplayClock=true;
     }
 }
 void reconnect() {
-     if /*while*/ (!client.connected()) {
+     if (!client.connected()) {
         Serial.print("Reconnecting...");
-        if (!client.connect("ESP8266NtpMatrixClockClientSub")) {
+        if (!client.connect(WiFi.localIP().toString().c_str())) {
             Serial.print("failed, rc=");
             Serial.print(client.state());
             //combine with while!
@@ -538,8 +538,11 @@ void reconnect() {
             //delay(5000);
         }
     }
-    client.subscribe("home/#");
-    Serial.println("MQTT Connected...");
+    if (client.connected())
+    {
+      client.subscribe("home/#");
+      Serial.println("MQTT Connected...");
+    }
 }
 
 void printTimeToBuffer(time_t t, char *tz)
