@@ -47,6 +47,7 @@
 #include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 #include <PubSubClient.h>
+#include "RemoteDebug.h"  //https://github.com/JoaoLopesF/RemoteDebug
 
 //
 // Debug messages over the serial console.
@@ -170,6 +171,7 @@ const char* MQTT_BROKER = "mqtt.pi-docker.lab";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+RemoteDebug Debug;
 
 //callback notifying us of the need to save config
 void saveConfigCallback ()
@@ -404,28 +406,35 @@ void setup(void)
 
 
 
+// Initialize the server (telnet or web socket) of RemoteDebug
+Debug.begin(WiFi.localIP().toString());
+// OR
+Debug.begin(WiFi.localIP().toString(), Debug.DEBUG);
+// Options
+Debug.setResetCmdEnabled(false); // Enable the reset command
+Debug.setSerialEnabled(true); // All messages too send to serial too, and can be see in serial monitor
 
-  Serial.println("Verbunden");
-  Serial.print("IP-Adresse: ");
-  Serial.println(WiFi.localIP());
+  Debug.println("Verbunden");
+  Debug.print("IP-Adresse: ");
+  Debug.println(WiFi.localIP());
 
-  Serial.println("Led aus!");
+  Debug.println("Led aus!");
   digitalWrite(LED_BUILTIN, HIGH);
 
   timeClient.begin();
-  Serial.println("NTP client started");
-  Serial.println(NTP_SERVER);
+  Debug.println("NTP client started");
+  Debug.println(NTP_SERVER);
   timeClient.update();
-  Serial.println(timeClient.getFormattedTime());
+  Debug.println(timeClient.getFormattedTime());
   unsigned long epoch = timeClient.getEpochTime();
-  Serial.println(epoch);
+  Debug.println(epoch);
 
   TimeChangeRule *tcr;
   time_t utc;
   utc = epoch;
 
   time_t local = CE.toLocal(utc, &tcr);
-  Serial.println(local);
+  Debug.println(local);
 
   unsigned long h = hour(local);
   unsigned long mi = minute(local);
@@ -434,24 +443,24 @@ void setup(void)
   unsigned long mo = month(local);
   unsigned long d = day(local);
 
-  Serial.print("local: ");
+  Debug.print("local: ");
   printTimeToBuffer(local, tcr -> abbrev);
-  Serial.println(timestrbuf);
+  Debug.println(timestrbuf);
   unsigned long zerohour = local - s - mi * 60 - h * 60 * 60;
-  Serial.print("zerohour: ");
+  Debug.print("zerohour: ");
   printTimeToBuffer(zerohour, tcr -> abbrev);
-  Serial.println(timestrbuf);
-  Serial.println(mi);
-  Serial.println(resetInfo->reason);
+  Debug.println(timestrbuf);
+  Debug.println(mi);
+  Debug.println(resetInfo->reason);
   unsigned long massaged = zerohour + 60 * 58 + (((resetInfo->reason == REASON_DEEP_SLEEP_AWAKE)||(mi>=58))?(h + 1):h) * 60 * 60;
 /*  Serial.print("massaged (first start): ");
   printTimeToBuffer(massaged, tcr -> abbrev);
   Serial.println(timestrbuf);
   lastmassaged=10;
   massaged = zerohour + 60 * 58 + (((lastmassaged>0)||(mi>=58))?(h + 1):h) * 60 * 60;
-*/  Serial.print("massaged: ");
+*/  Debug.print("massaged: ");
   printTimeToBuffer(massaged, tcr -> abbrev);
-  Serial.println(timestrbuf);
+  Debug.println(timestrbuf);
   //
   // Trigger the update of the display.
   //
@@ -462,10 +471,10 @@ void setup(void)
   }
   //Serial.println("Going into deep sleep for 20 seconds");
   //ESP.deepSleep(20e6); // 20e6 is 20 microseconds
-  Serial.print("Going into deep sleep - waking up at: ");
+  Debug.print("Going into deep sleep - waking up at: ");
   printTimeToBuffer(massaged, tcr -> abbrev);
-  Serial.println(timestrbuf);
-  Serial.println(massaged - local);
+  Debug.println(timestrbuf);
+  Debug.println(massaged - local);
 //  ESP.deepSleep((massaged - local) * 1e06); // 20e6 is 20 microseconds
   sprintf(lcdBuf,"    ");
   oben[1]=0;
@@ -491,26 +500,27 @@ void setup(void)
   }
  //   Serial.println(line);
     decodedMsg = String("IP ")+WiFi.localIP().toString()+String(" ");//line;
-    Serial.print("initial message: ");
-    Serial.println(decodedMsg.c_str());
+    Debug.print("initial message: ");
+    Debug.println(decodedMsg.c_str());
     fr.close();
 //uncomment to skip initial display of ip address  
 //  runs=maxRuns=1;
-  Serial.println("WebServer ready!   "); 
+  Debug.println("WebServer ready!   "); 
     client.setServer(MQTT_BROKER, 1883);
     client.setCallback(callback);
 
+
 }
 void callback(char* topic, byte* payload, unsigned int length) {
-    Serial.print("Received message [");
-    Serial.print(topic);
-    Serial.print("] ");
+    Debug.print("Received message [");
+    Debug.print(topic);
+    Debug.print("] ");
     char msg[length+1];
     for (int i = 0; i < length; i++) {
-        Serial.print((char)payload[i]);
+        Debug.print((char)payload[i]);
         msg[i] = (char)payload[i];
     }
-    Serial.println();
+    Debug.println();
  
     msg[length] = '\0';
     if((strcmp(topic,"home/clock/message")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/message")))){
@@ -558,10 +568,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 void reconnect() {
      if (!client.connected()) {
-        Serial.print("Reconnecting...");
+        Debug.print("Reconnecting...");
         if (!client.connect(WiFi.localIP().toString().c_str())) {
-            Serial.print("failed, rc=");
-            Serial.print(client.state());
+            Debug.print("failed, rc=");
+            Debug.println(client.state());
             //combine with while!
             //Serial.println(" retrying in 5 seconds");
             //delay(5000);
@@ -570,7 +580,7 @@ void reconnect() {
     if (client.connected())
     {
       client.subscribe("home/#");
-      Serial.println("MQTT Connected...");
+      Debug.println("MQTT Connected...");
     }
 }
 
@@ -607,7 +617,7 @@ void loop(void)
   ++loopcounter;
   sprintf(lcdBufOld,"%s",lcdBuf);
   timeClient.update();
-  Serial.println(timeClient.getFormattedTime());
+  Debug.println(timeClient.getFormattedTime());
   unsigned long epoch = timeClient.getEpochTime();
 //  Serial.println(epoch);
 
@@ -931,10 +941,10 @@ void loop(void)
             if(0)
             {
               decimal=i;
-              Serial.print("fixed: ");
-              Serial.println(fixed);
-              Serial.print("moving: ");
-              Serial.println(moving);
+              Debug.print("fixed: ");
+              Debug.println(fixed);
+              Debug.print("moving: ");
+              Debug.println(moving);
             }
             
 /*            int cc=0;
@@ -975,10 +985,10 @@ void loop(void)
     //        if(i!decimal)
             {
               decimal=i;
-              Serial.print("fixed: ");
-              Serial.println(fixed);
-              Serial.print("moving: ");
-              Serial.println(moving);
+              Debug.print("fixed: ");
+              Debug.println(fixed);
+              Debug.print("moving: ");
+              Debug.println(moving);
             }
             
             moving[1]=' ';
@@ -1078,6 +1088,7 @@ void loop(void)
 //  Serial.println(sensorValue);
   intensity=(int)(((sensorValue/1024.0)*(sensorValue/1024.0))*10.0);
   lmd.setIntensity(intensity);   // 0 = low, 10 = high
+  Debug.handle();
 }
 
 int getRandomNumber(int startNum, int endNum) {
@@ -1174,13 +1185,13 @@ void handle_msg() {
   maxRuns=runsI.toInt();
   String spdI=marqueeserver.arg("scrSp");
   wait=spdI.toInt();
-  Serial.println(wait);
+  Debug.println(wait);
   if(wait<5)
     wait=5;
   else if(wait>80)
     wait=80;
   String boldI=marqueeserver.arg("boldFont");
-  Serial.println(boldI);
+  Debug.println(boldI);
   if(strcmp(boldI.c_str(),"on")==0)
     bold=true;
   else
@@ -1215,10 +1226,11 @@ void handle_msg() {
 // Save decoded message to SPIFFS file for playback on power up.
   File f = SPIFFS.open("/msgf.txt", "w");
   if (!f) {
-    Serial.println("File open failed!");
+    Debug.println("File open failed!");
   } else {
-    Serial.print("Entered Message was: ");
-    Serial.print(decodedMsg);
+    Debug.print("Entered Message was: ");
+    Debug
+    .print(decodedMsg);
   f.print(decodedMsg);
   }
   f.close();
