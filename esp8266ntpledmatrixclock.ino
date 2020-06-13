@@ -164,6 +164,7 @@ long period;
 int offset=1,refresh=0;
 
 bool shouldDisplayClock = true;
+bool shouldDisplay = true;
 
 const char* MQTT_BROKER = "mqtt.pi-docker.lab";
 WiFiClient espClient;
@@ -478,6 +479,9 @@ void setup(void)
   marqueeserver.on("/cdispoff", handle_cdispoff);
   marqueeserver.on("/cdispon", handle_cdispon);
   marqueeserver.on("/cdisptoggle", handle_cdisptoggle);
+  marqueeserver.on("/dispoff", handle_dispoff);
+  marqueeserver.on("/dispon", handle_dispon);
+  marqueeserver.on("/disptoggle", handle_disptoggle);
   marqueeserver.begin();
   
 // ***************** INITIAL READY & Read stored message from SPIFFS ****************
@@ -518,13 +522,38 @@ void callback(char* topic, byte* payload, unsigned int length) {
       runs=0;
       maxRuns=1;
     }
-    if(strcmp(topic,"home/clock/dispOff")==0){
+    if((strcmp(topic,"home/clock/normal")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/normal"))))
+    {
+      bold=false;
+    }
+    if((strcmp(topic,"home/clock/bold")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/bold")))){
+      bold=true;
+    }
+    if((strcmp(topic,"home/clock/speed")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/speed")))){
+      String spdI=String(msg);
+      wait=spdI.toInt();
+      Serial.println(wait);
+      if(wait<5)
+        wait=5;
+      else if(wait>80)
+        wait=80;
+    }
+    if((strcmp(topic,"home/clock/dispClockOff")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/dispClockOff"))))
+    {
       lmd.clear();
       lmd.display();
       shouldDisplayClock=false;
     }
-    if(strcmp(topic,"home/clock/dispOn")==0){
+    if((strcmp(topic,"home/clock/dispClockOn")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/dispClockOn")))){
       shouldDisplayClock=true;
+    }
+    if((strcmp(topic,"home/clock/dispOff")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/dispOff")))){
+      lmd.clear();
+      lmd.display();
+      shouldDisplay=false;
+    }
+    if((strcmp(topic,"home/clock/dispOn")==0)||(String(topic).equals(String("home/clock/")+WiFi.localIP().toString()+String("/dispOn")))){
+      shouldDisplay=true;
     }
 }
 void reconnect() {
@@ -1014,14 +1043,16 @@ void loop(void)
         int y = 0;//(matrix.height() - 8) / 2; // center the text vertically
 //     Serial.print((char *)decodedMsg.c_str());
 //     Serial.println(i);
+    if(shouldDisplay)
+    {
         drawMarqueeString((char *)decodedMsg.c_str(), msgLen, -i, y);
     lmd.display();
-    
+    }    
         delay(wait);
       }
       ++runs;
     }
-    if(shouldDisplayClock==true)
+    if((shouldDisplayClock==true)&&(shouldDisplay))
     {
     // Draw the text to the current position
     drawClockString(lcdBuf, 4, (s%2)+(LEDMATRIX_WIDTH+1-32)/2, 0);
@@ -1210,5 +1241,23 @@ void handle_cdisptoggle() {
     handle_cdispoff();
   else
     handle_cdispon();
+}
+void handle_dispoff() {
+  lmd.clear();
+  lmd.display();
+  shouldDisplay=false;
+  marqueeserver.send(200, "text/html", form);    // Send same page so they can send another msg
+}
+
+void handle_dispon() {
+  shouldDisplay=true;
+  marqueeserver.send(200, "text/html", form);    // Send same page so they can send another msg
+}
+
+void handle_disptoggle() {
+  if(shouldDisplay==true)
+    handle_dispoff();
+  else
+    handle_dispon();
 }
 

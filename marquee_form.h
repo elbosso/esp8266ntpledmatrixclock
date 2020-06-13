@@ -159,6 +159,7 @@ String form =
 "</div>"
 "</form>"
 "</div> "
+
 "<div class='container'>"
 "<form action='cdisptoggle'>"
 "<div class='row'>"
@@ -171,6 +172,7 @@ String form =
 "</div>"
 "</form>"
 "</div> "
+
 "<div class='container'>"
 "<form action='cdispoff'>"
 "<div class='row'>"
@@ -183,6 +185,7 @@ String form =
 "</div>"
 "</form>"
 "</div> "
+
 "<div class='container'>"
 "<form action='cdispon'>"
 "<div class='row'>"
@@ -195,6 +198,46 @@ String form =
 "</div>"
 "</form>"
 "</div> "
+
+"<div class='container'>"
+"<form action='disptoggle'>"
+"<div class='row'>"
+"<div class='col-25'>"
+"<label>Display</label>"
+"</div>"
+"<div class='col-75'>"
+"<input type='submit' value='Toggle'>"
+"</div>"
+"</div>"
+"</form>"
+"</div> "
+
+"<div class='container'>"
+"<form action='dispoff'>"
+"<div class='row'>"
+"<div class='col-25'>"
+"<label>Display</label>"
+"</div>"
+"<div class='col-75'>"
+"<input type='submit' value='Off'>"
+"</div>"
+"</div>"
+"</form>"
+"</div>"
+
+"<div class='container'>"
+"<form action='dispon'>"
+"<div class='row'>"
+"<div class='col-25'>"
+"<label>Display</label>"
+"</div>"
+"<div class='col-75'>"
+"<input type='submit' value='On'>"
+"</div>"
+"</div>"
+"</form>"
+"</div> "
+
 
 "</body></html>";
 
