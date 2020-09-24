@@ -649,7 +649,7 @@ void loop(void)
   //2:horizontal shrink, horizontal grow
   //1:shift out to right, shift in from right
   //default:roll from top
-  if(shouldDisplayClock==true)
+  if((shouldDisplayClock==true)&&(shouldDisplay==true))
   {
   switch(animationmode)
   {
